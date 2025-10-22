@@ -19,6 +19,7 @@ const Index = () => {
   const [hunger, setHunger] = useState(100);
   const [cleanliness, setCleanliness] = useState(100);
   const [happiness, setHappiness] = useState(100);
+  const [showWhining, setShowWhining] = useState(false);
   
   const { toast } = useToast();
   
@@ -33,6 +34,40 @@ const Index = () => {
     
     return () => clearInterval(interval);
   }, [action]);
+  
+  useEffect(() => {
+    if (hunger <= 20 && hunger > 0) {
+      toast({
+        title: "⚠️ Голод!",
+        description: "Shadow Milk Cookie очень голоден! Покорми его!",
+        variant: "destructive"
+      });
+    }
+    if (cleanliness <= 20 && cleanliness > 0) {
+      toast({
+        title: "⚠️ Грязь!",
+        description: "Shadow Milk Cookie грязный! Искупай его!",
+        variant: "destructive"
+      });
+    }
+  }, [Math.floor(hunger / 20), Math.floor(cleanliness / 20)]);
+  
+  useEffect(() => {
+    if (happiness <= 20 && happiness > 0) {
+      setShowWhining(true);
+      const whineInterval = setInterval(() => {
+        toast({
+          title: "😢 Скучно...",
+          description: "Shadow Milk Cookie грустит! Погладь меня!",
+          variant: "destructive"
+        });
+      }, 5000);
+      
+      return () => clearInterval(whineInterval);
+    } else {
+      setShowWhining(false);
+    }
+  }, [happiness, toast]);
   
   const playSound = (type: string) => {
     const audio = new Audio();
@@ -223,16 +258,22 @@ const Index = () => {
             onMouseMove={handleSoapDrag}
             onMouseUp={handleFoodDrag}
           >
-            <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''}`}>
+            <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
                 src="https://v3b.fal.media/files/b/rabbit/zN-DcaKQpkxQA7e5BtSQC_output.png" 
                 alt="Shadow Milk Cookie"
                 className={`w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl ${
                   action === 'eating' ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
+                  showWhining ? 'animate-shake' :
                   'animate-float'
                 }`}
               />
+              {showWhining && (
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-4xl animate-bounce">
+                  😢 💔
+                </div>
+              )}
             </div>
 
             {showBubbles && (
