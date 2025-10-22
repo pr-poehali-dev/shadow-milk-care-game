@@ -260,7 +260,7 @@ const Index = () => {
           >
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
-                src="https://v3b.fal.media/files/b/rabbit/zN-DcaKQpkxQA7e5BtSQC_output.png" 
+                src="https://cdn.poehali.dev/files/eec1f7bb-a516-476a-befa-eedf06e4dfb7.png" 
                 alt="Shadow Milk Cookie"
                 className={`w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl ${
                   action === 'eating' ? 'animate-shake' : 
