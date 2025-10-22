@@ -289,9 +289,16 @@ const Index = () => {
                 }`}
               />
               {showWhining && (
-                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-4xl animate-bounce">
-                  😢 💔
-                </div>
+                <>
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-4xl animate-bounce">
+                    😢 💔
+                  </div>
+                  <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-white border-4 border-red-500 rounded-2xl px-4 py-2 shadow-2xl animate-bounce whitespace-nowrap">
+                    <p className="text-red-600 font-bold text-sm md:text-base">
+                      Нет нет нет! Погладь меня! Я не хочу умирать!!
+                    </p>
+                  </div>
+                </>
               )}
             </div>
 
