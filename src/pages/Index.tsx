@@ -31,9 +31,9 @@ const Index = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (action !== 'sleeping') {
-        setHunger(prev => Math.max(0, prev - 2));
-        setCleanliness(prev => Math.max(0, prev - 1));
-        setHappiness(prev => Math.max(0, prev - 1));
+        setHunger(prev => Math.max(0, prev - 0.5));
+        setCleanliness(prev => Math.max(0, prev - 0.3));
+        setHappiness(prev => Math.max(0, prev - 0.2));
       }
     }, 1000);
     
