@@ -58,12 +58,12 @@ const Index = () => {
   }, [Math.floor(hunger / 20), Math.floor(cleanliness / 20)]);
   
   useEffect(() => {
-    if (happiness <= 50 && happiness > 0) {
+    if (hunger <= 50 && hunger > 0) {
       setShowWhining(true);
       const whineInterval = setInterval(() => {
         toast({
-          title: "😢 Скучно...",
-          description: "Shadow Milk Cookie грустит! Погладь меня!",
+          title: "😢 Голод!",
+          description: "Shadow Milk Cookie очень голоден! Покорми его!",
           variant: "destructive"
         });
       }, 5000);
@@ -72,7 +72,7 @@ const Index = () => {
     } else {
       setShowWhining(false);
     }
-  }, [happiness, toast]);
+  }, [hunger, toast]);
   
   const playSound = (type: string) => {
     const audio = new Audio();
