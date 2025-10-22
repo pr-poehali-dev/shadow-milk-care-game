@@ -58,7 +58,7 @@ const Index = () => {
   }, [Math.floor(hunger / 20), Math.floor(cleanliness / 20)]);
   
   useEffect(() => {
-    if (happiness <= 20 && happiness > 0) {
+    if (happiness <= 50 && happiness > 0) {
       setShowWhining(true);
       const whineInterval = setInterval(() => {
         toast({
@@ -200,7 +200,7 @@ const Index = () => {
           y >= characterRect.top && y <= characterRect.bottom) {
         const newHappiness = Math.min(100, happiness + 25);
         setHappiness(newHappiness);
-        if (newHappiness > 20) {
+        if (newHappiness > 50) {
           setShowWhining(false);
         }
         toast({
