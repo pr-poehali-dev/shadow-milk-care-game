@@ -1,11 +1,285 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+
+type Action = 'idle' | 'eating' | 'bathing' | 'petting' | 'sleeping';
+type Food = 'egg' | 'chicken' | 'noodles' | null;
 
 const Index = () => {
+  const [action, setAction] = useState<Action>('idle');
+  const [selectedFood, setSelectedFood] = useState<Food>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [showSoap, setShowSoap] = useState(false);
+  const [showShower, setShowShower] = useState(false);
+  const [showBubbles, setShowBubbles] = useState(false);
+  const [showHand, setShowHand] = useState(false);
+  const { toast } = useToast();
+  
+  const playSound = (type: string) => {
+    const audio = new Audio();
+    audio.volume = 0.3;
+    
+    switch(type) {
+      case 'click':
+        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+        break;
+      case 'eat':
+        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+        break;
+      case 'water':
+        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+        break;
+      case 'sleep':
+        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+        break;
+    }
+    
+    audio.play().catch(() => {});
+  };
+
+  const handleFoodClick = () => {
+    if (action === 'eating' && selectedFood) {
+      setSelectedFood(null);
+      setAction('idle');
+    } else {
+      playSound('click');
+      const foods: Food[] = ['egg', 'chicken', 'noodles'];
+      const randomFood = foods[Math.floor(Math.random() * foods.length)];
+      setSelectedFood(randomFood);
+      setAction('eating');
+    }
+  };
+
+  const handleBathClick = () => {
+    playSound('click');
+    if (action === 'bathing') {
+      setAction('idle');
+      setShowSoap(false);
+      setShowShower(false);
+      setShowBubbles(false);
+    } else {
+      setAction('bathing');
+      setShowSoap(true);
+    }
+  };
+
+  const handlePetClick = () => {
+    playSound('click');
+    if (action === 'petting') {
+      setAction('idle');
+      setShowHand(false);
+    } else {
+      setAction('petting');
+      setShowHand(true);
+      toast({
+        title: "🎵 Мурр-мурр!",
+        description: "Shadow Milk Cookie доволен!",
+      });
+    }
+  };
+
+  const handleSleepClick = () => {
+    playSound('sleep');
+    if (action === 'sleeping') {
+      setAction('idle');
+    } else {
+      setAction('sleeping');
+    }
+  };
+
+  const handleSoapDrag = (e: React.MouseEvent) => {
+    if (showSoap && action === 'bathing') {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      if (Math.abs(e.clientX - rect.left - centerX) < 100 && 
+          Math.abs(e.clientY - rect.top - centerY) < 100) {
+        setShowBubbles(true);
+        setShowSoap(false);
+        
+        setTimeout(() => {
+          playSound('water');
+          setShowShower(true);
+          setTimeout(() => {
+            setShowShower(false);
+            setShowBubbles(false);
+            setAction('idle');
+          }, 5000);
+        }, 1000);
+      }
+    }
+  };
+
+  const handleFoodDrag = (e: React.MouseEvent) => {
+    if (isDragging && selectedFood) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      if (Math.abs(e.clientX - rect.left - centerX) < 100 && 
+          Math.abs(e.clientY - rect.top - centerY) < 100) {
+        playSound('eat');
+        toast({
+          title: "😋 Вкусно!",
+          description: "Shadow Milk Cookie съел еду!",
+        });
+        setSelectedFood(null);
+        setIsDragging(false);
+        setTimeout(() => setAction('idle'), 1000);
+      }
+    }
+  };
+
+  const foodEmojis = {
+    egg: '🍳',
+    chicken: '🍗',
+    noodles: '🍜'
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
+    <div className={`min-h-screen transition-all duration-1000 ${action === 'sleeping' ? 'bg-gradient-to-b from-indigo-900 to-purple-900' : 'bg-gradient-to-b from-pink-200 via-purple-200 to-yellow-100'}`}>
+      <div className="container mx-auto px-4 py-8 h-screen flex flex-col">
+        <h1 className="game-title text-4xl md:text-6xl text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-500 animate-float">
+          Ухаживай за Shadow Milk! 🍪
+        </h1>
+
+        <div className="flex-1 flex items-center justify-center relative">
+          <div 
+            className="relative"
+            onMouseMove={handleSoapDrag}
+            onMouseUp={handleFoodDrag}
+          >
+            <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''}`}>
+              <img 
+                src="https://v3b.fal.media/files/b/rabbit/zN-DcaKQpkxQA7e5BtSQC_output.png" 
+                alt="Shadow Milk Cookie"
+                className={`w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl ${
+                  action === 'eating' ? 'animate-shake' : 
+                  action === 'petting' ? 'animate-bounce-in' :
+                  'animate-float'
+                }`}
+              />
+            </div>
+
+            {showBubbles && (
+              <div className="absolute inset-0 pointer-events-none">
+                {[...Array(20)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute bg-white rounded-full opacity-70 animate-bubble"
+                    style={{
+                      width: Math.random() * 30 + 10 + 'px',
+                      height: Math.random() * 30 + 10 + 'px',
+                      left: Math.random() * 100 + '%',
+                      top: Math.random() * 100 + '%',
+                      animationDelay: Math.random() * 2 + 's'
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {showShower && (
+              <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 text-6xl">
+                🚿
+                <div className="absolute top-16 left-1/2 transform -translate-x-1/2 text-blue-400 text-4xl opacity-70">
+                  💧💧💧💧💧
+                </div>
+              </div>
+            )}
+
+            {showSoap && (
+              <div 
+                className="absolute top-0 right-0 text-6xl cursor-move hover:scale-110 transition-transform"
+                draggable
+              >
+                🧼
+              </div>
+            )}
+
+            {showHand && (
+              <div className="absolute top-0 right-0 text-6xl animate-bounce-in cursor-pointer">
+                👋
+              </div>
+            )}
+
+            {action === 'sleeping' && (
+              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-4xl animate-float">
+                💤 💤 💤
+              </div>
+            )}
+          </div>
+
+          {selectedFood && (
+            <div
+              className="fixed z-50 text-6xl cursor-move hover:scale-110 transition-transform animate-bounce-in"
+              style={{
+                left: dragPosition.x,
+                top: dragPosition.y,
+                pointerEvents: 'auto'
+              }}
+              draggable
+              onDragStart={(e) => {
+                setIsDragging(true);
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              onDrag={(e) => {
+                if (e.clientX && e.clientY) {
+                  setDragPosition({ x: e.clientX, y: e.clientY });
+                }
+              }}
+              onDragEnd={() => {
+                setIsDragging(false);
+              }}
+            >
+              {foodEmojis[selectedFood]}
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-4 gap-4 pb-8">
+          <Card 
+            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+              action === 'eating' ? 'border-yellow-400 bg-yellow-50' : 'border-purple-300 bg-white'
+            }`}
+            onClick={handleFoodClick}
+          >
+            <div className="text-5xl">🍪</div>
+            <span className="font-bold text-sm md:text-base text-center">Еда</span>
+          </Card>
+
+          <Card 
+            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+              action === 'bathing' ? 'border-blue-400 bg-blue-50' : 'border-purple-300 bg-white'
+            }`}
+            onClick={handleBathClick}
+          >
+            <div className="text-5xl">🛁</div>
+            <span className="font-bold text-sm md:text-base text-center">Ванна</span>
+          </Card>
+
+          <Card 
+            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+              action === 'petting' ? 'border-pink-400 bg-pink-50' : 'border-purple-300 bg-white'
+            }`}
+            onClick={handlePetClick}
+          >
+            <div className="text-5xl">✋</div>
+            <span className="font-bold text-sm md:text-base text-center">Гладить</span>
+          </Card>
+
+          <Card 
+            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+              action === 'sleeping' ? 'border-indigo-400 bg-indigo-50' : 'border-purple-300 bg-white'
+            }`}
+            onClick={handleSleepClick}
+          >
+            <div className="text-5xl">🌙</div>
+            <span className="font-bold text-sm md:text-base text-center">Спать</span>
+          </Card>
+        </div>
       </div>
     </div>
   );
