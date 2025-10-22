@@ -193,7 +193,11 @@ const Index = () => {
     if (characterRect) {
       if (x >= characterRect.left && x <= characterRect.right &&
           y >= characterRect.top && y <= characterRect.bottom) {
-        setHappiness(Math.min(100, happiness + 25));
+        const newHappiness = Math.min(100, happiness + 25);
+        setHappiness(newHappiness);
+        if (newHappiness > 20) {
+          setShowWhining(false);
+        }
         toast({
           title: "🎵 Мурр-мурр!",
           description: "Shadow Milk Cookie доволен! +25 счастье",
@@ -266,9 +270,9 @@ const Index = () => {
           <div className="relative">
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
-                src="https://cdn.poehali.dev/files/eec1f7bb-a516-476a-befa-eedf06e4dfb7.png" 
+                src={showWhining ? "https://cdn.poehali.dev/files/dcffaa07-9edb-4f82-acab-a1f835b610bb.png" : "https://cdn.poehali.dev/files/eec1f7bb-a516-476a-befa-eedf06e4dfb7.png"}
                 alt="Shadow Milk Cookie"
-                className={`character-img w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl ${
+                className={`character-img w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl transition-all duration-500 ${
                   action === 'eating' ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
                   showWhining ? 'animate-shake' :
