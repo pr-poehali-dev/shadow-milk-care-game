@@ -15,6 +15,10 @@ const Index = () => {
   const [showShower, setShowShower] = useState(false);
   const [showBubbles, setShowBubbles] = useState(false);
   const [showHand, setShowHand] = useState(false);
+  const [draggingSoap, setDraggingSoap] = useState(false);
+  const [draggingHand, setDraggingHand] = useState(false);
+  const [soapPosition, setSoapPosition] = useState({ x: 0, y: 0 });
+  const [handPosition, setHandPosition] = useState({ x: 0, y: 0 });
   
   const [hunger, setHunger] = useState(100);
   const [cleanliness, setCleanliness] = useState(100);
@@ -111,6 +115,7 @@ const Index = () => {
       setShowSoap(false);
       setShowShower(false);
       setShowBubbles(false);
+      setDraggingSoap(false);
     } else {
       setAction('bathing');
       setShowSoap(true);
@@ -122,14 +127,10 @@ const Index = () => {
     if (action === 'petting') {
       setAction('idle');
       setShowHand(false);
+      setDraggingHand(false);
     } else {
       setAction('petting');
       setShowHand(true);
-      setHappiness(Math.min(100, happiness + 25));
-      toast({
-        title: "🎵 Мурр-мурр!",
-        description: "Shadow Milk Cookie доволен! +25 счастье",
-      });
     }
   };
 
@@ -142,16 +143,14 @@ const Index = () => {
     }
   };
 
-  const handleSoapDrag = (e: React.MouseEvent) => {
-    if (showSoap && action === 'bathing') {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      
-      if (Math.abs(e.clientX - rect.left - centerX) < 100 && 
-          Math.abs(e.clientY - rect.top - centerY) < 100) {
+  const checkSoapOnCharacter = (x: number, y: number) => {
+    const characterRect = document.querySelector('.character-img')?.getBoundingClientRect();
+    if (characterRect) {
+      if (x >= characterRect.left && x <= characterRect.right &&
+          y >= characterRect.top && y <= characterRect.bottom) {
         setShowBubbles(true);
         setShowSoap(false);
+        setDraggingSoap(false);
         
         setTimeout(() => {
           playSound('water');
@@ -171,14 +170,11 @@ const Index = () => {
     }
   };
 
-  const handleFoodDrag = (e: React.MouseEvent) => {
-    if (isDragging && selectedFood) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      
-      if (Math.abs(e.clientX - rect.left - centerX) < 100 && 
-          Math.abs(e.clientY - rect.top - centerY) < 100) {
+  const checkFoodOnCharacter = (x: number, y: number) => {
+    const characterRect = document.querySelector('.character-img')?.getBoundingClientRect();
+    if (characterRect && selectedFood) {
+      if (x >= characterRect.left && x <= characterRect.right &&
+          y >= characterRect.top && y <= characterRect.bottom) {
         playSound('eat');
         setHunger(Math.min(100, hunger + 30));
         toast({
@@ -188,6 +184,20 @@ const Index = () => {
         setSelectedFood(null);
         setIsDragging(false);
         setTimeout(() => setAction('idle'), 1000);
+      }
+    }
+  };
+  
+  const checkHandOnCharacter = (x: number, y: number) => {
+    const characterRect = document.querySelector('.character-img')?.getBoundingClientRect();
+    if (characterRect) {
+      if (x >= characterRect.left && x <= characterRect.right &&
+          y >= characterRect.top && y <= characterRect.bottom) {
+        setHappiness(Math.min(100, happiness + 25));
+        toast({
+          title: "🎵 Мурр-мурр!",
+          description: "Shadow Milk Cookie доволен! +25 счастье",
+        });
       }
     }
   };
@@ -253,16 +263,12 @@ const Index = () => {
         </div>
 
         <div className="flex-1 flex items-center justify-center relative">
-          <div 
-            className="relative"
-            onMouseMove={handleSoapDrag}
-            onMouseUp={handleFoodDrag}
-          >
+          <div className="relative">
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
                 src="https://cdn.poehali.dev/files/eec1f7bb-a516-476a-befa-eedf06e4dfb7.png" 
                 alt="Shadow Milk Cookie"
-                className={`w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl ${
+                className={`character-img w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl ${
                   action === 'eating' ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
                   showWhining ? 'animate-shake' :
@@ -303,20 +309,7 @@ const Index = () => {
               </div>
             )}
 
-            {showSoap && (
-              <div 
-                className="absolute top-0 right-0 text-6xl cursor-move hover:scale-110 transition-transform"
-                draggable
-              >
-                🧼
-              </div>
-            )}
 
-            {showHand && (
-              <div className="absolute top-0 right-0 text-6xl animate-bounce-in cursor-pointer">
-                👋
-              </div>
-            )}
 
             {action === 'sleeping' && (
               <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 text-4xl animate-float">
@@ -327,27 +320,122 @@ const Index = () => {
 
           {selectedFood && (
             <div
-              className="fixed z-50 text-6xl cursor-move hover:scale-110 transition-transform animate-bounce-in"
+              className="fixed z-50 text-6xl cursor-move hover:scale-110 transition-transform animate-bounce-in select-none"
               style={{
-                left: dragPosition.x,
-                top: dragPosition.y,
-                pointerEvents: 'auto'
+                left: dragPosition.x - 30,
+                top: dragPosition.y - 30,
+                pointerEvents: 'auto',
+                touchAction: 'none'
               }}
-              draggable
-              onDragStart={(e) => {
-                setIsDragging(true);
-                e.dataTransfer.effectAllowed = 'move';
-              }}
-              onDrag={(e) => {
-                if (e.clientX && e.clientY) {
+              onMouseDown={() => setIsDragging(true)}
+              onTouchStart={() => setIsDragging(true)}
+              onMouseMove={(e) => {
+                if (isDragging) {
                   setDragPosition({ x: e.clientX, y: e.clientY });
                 }
               }}
-              onDragEnd={() => {
-                setIsDragging(false);
+              onTouchMove={(e) => {
+                if (isDragging) {
+                  const touch = e.touches[0];
+                  setDragPosition({ x: touch.clientX, y: touch.clientY });
+                }
+              }}
+              onMouseUp={(e) => {
+                if (isDragging) {
+                  checkFoodOnCharacter(e.clientX, e.clientY);
+                  setIsDragging(false);
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (isDragging) {
+                  const touch = e.changedTouches[0];
+                  checkFoodOnCharacter(touch.clientX, touch.clientY);
+                  setIsDragging(false);
+                }
               }}
             >
               {foodEmojis[selectedFood]}
+            </div>
+          )}
+          
+          {showSoap && (
+            <div
+              className="fixed z-50 text-6xl cursor-move hover:scale-110 transition-transform select-none"
+              style={{
+                left: draggingSoap ? soapPosition.x - 30 : 'auto',
+                top: draggingSoap ? soapPosition.y - 30 : 'auto',
+                right: !draggingSoap ? '20%' : 'auto',
+                bottom: !draggingSoap ? '40%' : 'auto',
+                pointerEvents: 'auto',
+                touchAction: 'none'
+              }}
+              onMouseDown={() => setDraggingSoap(true)}
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                setSoapPosition({ x: touch.clientX, y: touch.clientY });
+                setDraggingSoap(true);
+              }}
+              onMouseMove={(e) => {
+                if (draggingSoap) {
+                  setSoapPosition({ x: e.clientX, y: e.clientY });
+                }
+              }}
+              onTouchMove={(e) => {
+                if (draggingSoap) {
+                  const touch = e.touches[0];
+                  setSoapPosition({ x: touch.clientX, y: touch.clientY });
+                }
+              }}
+              onMouseUp={(e) => {
+                if (draggingSoap) {
+                  checkSoapOnCharacter(e.clientX, e.clientY);
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (draggingSoap) {
+                  const touch = e.changedTouches[0];
+                  checkSoapOnCharacter(touch.clientX, touch.clientY);
+                }
+              }}
+            >
+              🧼
+            </div>
+          )}
+          
+          {showHand && (
+            <div
+              className="fixed z-50 text-6xl cursor-move hover:scale-110 transition-transform select-none"
+              style={{
+                left: draggingHand ? handPosition.x - 30 : 'auto',
+                top: draggingHand ? handPosition.y - 30 : 'auto',
+                right: !draggingHand ? '20%' : 'auto',
+                bottom: !draggingHand ? '40%' : 'auto',
+                pointerEvents: 'auto',
+                touchAction: 'none'
+              }}
+              onMouseDown={() => setDraggingHand(true)}
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                setHandPosition({ x: touch.clientX, y: touch.clientY });
+                setDraggingHand(true);
+              }}
+              onMouseMove={(e) => {
+                if (draggingHand) {
+                  setHandPosition({ x: e.clientX, y: e.clientY });
+                  checkHandOnCharacter(e.clientX, e.clientY);
+                }
+              }}
+              onTouchMove={(e) => {
+                if (draggingHand) {
+                  const touch = e.touches[0];
+                  setHandPosition({ x: touch.clientX, y: touch.clientY });
+                  checkHandOnCharacter(touch.clientX, touch.clientY);
+                }
+              }}
+              onMouseUp={() => setDraggingHand(false)}
+              onTouchEnd={() => setDraggingHand(false)}
+            >
+              👋
             </div>
           )}
         </div>
