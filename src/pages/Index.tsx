@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
 type Action = 'idle' | 'eating' | 'bathing' | 'petting' | 'sleeping';
@@ -14,7 +15,24 @@ const Index = () => {
   const [showShower, setShowShower] = useState(false);
   const [showBubbles, setShowBubbles] = useState(false);
   const [showHand, setShowHand] = useState(false);
+  
+  const [hunger, setHunger] = useState(100);
+  const [cleanliness, setCleanliness] = useState(100);
+  const [happiness, setHappiness] = useState(100);
+  
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (action !== 'sleeping') {
+        setHunger(prev => Math.max(0, prev - 0.5));
+        setCleanliness(prev => Math.max(0, prev - 0.3));
+        setHappiness(prev => Math.max(0, prev - 0.2));
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [action]);
   
   const playSound = (type: string) => {
     const audio = new Audio();
@@ -72,9 +90,10 @@ const Index = () => {
     } else {
       setAction('petting');
       setShowHand(true);
+      setHappiness(Math.min(100, happiness + 25));
       toast({
         title: "🎵 Мурр-мурр!",
-        description: "Shadow Milk Cookie доволен!",
+        description: "Shadow Milk Cookie доволен! +25 счастье",
       });
     }
   };
@@ -102,10 +121,15 @@ const Index = () => {
         setTimeout(() => {
           playSound('water');
           setShowShower(true);
+          setCleanliness(100);
           setTimeout(() => {
             setShowShower(false);
             setShowBubbles(false);
             setAction('idle');
+            toast({
+              title: "✨ Чисто!",
+              description: "Shadow Milk Cookie чистый! +100 чистота",
+            });
           }, 5000);
         }, 1000);
       }
@@ -121,9 +145,10 @@ const Index = () => {
       if (Math.abs(e.clientX - rect.left - centerX) < 100 && 
           Math.abs(e.clientY - rect.top - centerY) < 100) {
         playSound('eat');
+        setHunger(Math.min(100, hunger + 30));
         toast({
           title: "😋 Вкусно!",
-          description: "Shadow Milk Cookie съел еду!",
+          description: "Shadow Milk Cookie съел еду! +30 голод",
         });
         setSelectedFood(null);
         setIsDragging(false);
@@ -140,10 +165,57 @@ const Index = () => {
 
   return (
     <div className={`min-h-screen transition-all duration-1000 ${action === 'sleeping' ? 'bg-gradient-to-b from-indigo-900 to-purple-900' : 'bg-gradient-to-b from-pink-200 via-purple-200 to-yellow-100'}`}>
-      <div className="container mx-auto px-4 py-8 h-screen flex flex-col">
-        <h1 className="game-title text-4xl md:text-6xl text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-500 animate-float">
+      <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
+        <h1 className="game-title text-3xl md:text-5xl text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-500">
           Ухаживай за Shadow Milk! 🍪
         </h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 max-w-4xl mx-auto w-full">
+          <Card className="p-4 border-4 border-yellow-300 bg-white">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">🍽️</span>
+              <div className="flex-1">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-sm">Голод</span>
+                  <span className="text-sm font-semibold">{Math.round(hunger)}%</span>
+                </div>
+                <Progress value={hunger} className="h-3" style={{
+                  background: 'linear-gradient(to right, #fbbf24, #f59e0b)'
+                }} />
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4 border-4 border-blue-300 bg-white">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">✨</span>
+              <div className="flex-1">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-sm">Чистота</span>
+                  <span className="text-sm font-semibold">{Math.round(cleanliness)}%</span>
+                </div>
+                <Progress value={cleanliness} className="h-3" style={{
+                  background: 'linear-gradient(to right, #60a5fa, #3b82f6)'
+                }} />
+              </div>
+            </div>
+          </Card>
+          
+          <Card className="p-4 border-4 border-pink-300 bg-white">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">💖</span>
+              <div className="flex-1">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-sm">Счастье</span>
+                  <span className="text-sm font-semibold">{Math.round(happiness)}%</span>
+                </div>
+                <Progress value={happiness} className="h-3" style={{
+                  background: 'linear-gradient(to right, #f472b6, #ec4899)'
+                }} />
+              </div>
+            </div>
+          </Card>
+        </div>
 
         <div className="flex-1 flex items-center justify-center relative">
           <div 
