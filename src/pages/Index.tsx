@@ -27,6 +27,7 @@ const Index = () => {
   const [isEating, setIsEating] = useState(false);
   const [angryMessage, setAngryMessage] = useState('');
   const [talkMessage, setTalkMessage] = useState('');
+  const [pettingMessage, setPettingMessage] = useState('');
   
   const { toast } = useToast();
   
@@ -265,14 +266,25 @@ const Index = () => {
     if (characterRect) {
       if (x >= characterRect.left && x <= characterRect.right &&
           y >= characterRect.top && y <= characterRect.bottom) {
-        const newHappiness = Math.min(100, happiness + 25);
+        const newHappiness = Math.min(100, happiness + 1);
         setHappiness(newHappiness);
         if (newHappiness > 50) {
           setShowWhining(false);
         }
+        
+        setPettingMessage('мур мур мур мур мур~~');
+        setAction('petting');
+        
+        setTimeout(() => {
+          setPettingMessage('');
+          if (action === 'petting') {
+            setAction('idle');
+          }
+        }, 3000);
+        
         toast({
           title: "🎵 Мурр-мурр!",
-          description: "Shadow Milk Cookie доволен! +25 счастье",
+          description: "Shadow Milk Cookie доволен! +1 счастье",
         });
       }
     }
@@ -364,6 +376,7 @@ const Index = () => {
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
                 src={
+                  action === 'petting' ? "https://cdn.poehali.dev/files/e181ca10-ace5-4d69-a935-784413fab1e9.png" :
                   action === 'talking' ? "https://cdn.poehali.dev/files/f873f887-1595-443f-8cca-41b9757fc23b.png" :
                   action === 'angry' ? "https://cdn.poehali.dev/files/4cb7713a-ef0b-416d-a4fa-bb4fc252d836.png" :
                   isEating ? "https://cdn.poehali.dev/files/1f7564f4-9858-4ca3-9234-44c89e27ade9.png" :
@@ -383,6 +396,13 @@ const Index = () => {
                 }`}
                 onClick={handleCharacterClick}
               />
+              {pettingMessage && (
+                <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-pink-400 border-4 border-pink-600 rounded-2xl px-4 py-2 shadow-2xl whitespace-nowrap z-10">
+                  <p className="text-white font-bold text-sm md:text-base">
+                    {pettingMessage}
+                  </p>
+                </div>
+              )}
               {talkMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-purple-500 border-4 border-purple-700 rounded-2xl px-4 py-2 shadow-2xl max-w-xs md:max-w-md z-10">
                   <p className="text-white font-bold text-xs md:text-sm whitespace-normal">
