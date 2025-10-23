@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
-type Action = 'idle' | 'eating' | 'bathing' | 'petting' | 'sleeping' | 'angry';
+type Action = 'idle' | 'eating' | 'bathing' | 'petting' | 'sleeping' | 'angry' | 'talking';
 type Food = 'egg' | 'chicken' | 'noodles' | null;
 
 const Index = () => {
@@ -26,6 +26,7 @@ const Index = () => {
   const [showWhining, setShowWhining] = useState(false);
   const [isEating, setIsEating] = useState(false);
   const [angryMessage, setAngryMessage] = useState('');
+  const [talkMessage, setTalkMessage] = useState('');
   
   const { toast } = useToast();
   
@@ -74,6 +75,29 @@ const Index = () => {
       setShowWhining(false);
     }
   }, [hunger, toast]);
+  
+  useEffect(() => {
+    const talkMessages = [
+      'Ох-хо-хо! Неужели за мной будет ухаживать как с малышом?~ Не хочу чтобы это повторилось.',
+      'Хах? А где веселье? Будет скучно?',
+      'Хочешь узнать, почему на моем плаще глаза смотрят на мою задницу?~ Потому что моя задница прекраснее природы!'
+    ];
+    
+    const talkInterval = setInterval(() => {
+      if (action !== 'angry' && action !== 'talking') {
+        const randomMessage = talkMessages[Math.floor(Math.random() * talkMessages.length)];
+        setTalkMessage(randomMessage);
+        setAction('talking');
+        
+        setTimeout(() => {
+          setTalkMessage('');
+          setAction('idle');
+        }, 5000);
+      }
+    }, 12000);
+    
+    return () => clearInterval(talkInterval);
+  }, [action]);
   
   const playGrowlSound = () => {
     try {
@@ -340,6 +364,7 @@ const Index = () => {
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
                 src={
+                  action === 'talking' ? "https://cdn.poehali.dev/files/f873f887-1595-443f-8cca-41b9757fc23b.png" :
                   action === 'angry' ? "https://cdn.poehali.dev/files/4cb7713a-ef0b-416d-a4fa-bb4fc252d836.png" :
                   isEating ? "https://cdn.poehali.dev/files/1f7564f4-9858-4ca3-9234-44c89e27ade9.png" :
                   showWhining ? "https://cdn.poehali.dev/files/dcffaa07-9edb-4f82-acab-a1f835b610bb.png" : 
@@ -349,6 +374,7 @@ const Index = () => {
                 className={`character-img object-contain drop-shadow-2xl transition-all duration-500 cursor-pointer ${
                   action === 'angry' ? 'w-56 h-56 md:w-80 md:h-80' : 'w-64 h-64 md:w-96 md:h-96'
                 } ${
+                  action === 'talking' ? 'animate-bounce-in' :
                   action === 'angry' ? '' :
                   action === 'eating' || isEating ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
@@ -357,6 +383,13 @@ const Index = () => {
                 }`}
                 onClick={handleCharacterClick}
               />
+              {talkMessage && (
+                <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-purple-500 border-4 border-purple-700 rounded-2xl px-4 py-2 shadow-2xl max-w-xs md:max-w-md z-10">
+                  <p className="text-white font-bold text-xs md:text-sm whitespace-normal">
+                    {talkMessage}
+                  </p>
+                </div>
+              )}
               {angryMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-red-600 border-4 border-red-900 rounded-2xl px-4 py-2 shadow-2xl animate-pulse whitespace-nowrap z-10">
                   <p className="text-white font-bold text-sm md:text-base">
