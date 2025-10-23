@@ -396,7 +396,7 @@ const Index = () => {
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
                 src={
-                  isCrying ? "https://cdn.poehali.dev/files/dcffaa07-9edb-4f82-acab-a1f835b610bb.png" :
+                  isCrying ? "https://cdn.poehali.dev/files/b89b2f3a-4621-4754-9138-1ad5c5f5d426.png" :
                   action === 'petting' ? "https://cdn.poehali.dev/files/e181ca10-ace5-4d69-a935-784413fab1e9.png" :
                   action === 'talking' ? "https://cdn.poehali.dev/files/f873f887-1595-443f-8cca-41b9757fc23b.png" :
                   action === 'angry' ? "https://cdn.poehali.dev/files/4cb7713a-ef0b-416d-a4fa-bb4fc252d836.png" :
@@ -425,28 +425,28 @@ const Index = () => {
                   </p>
                 </div>
               )}
-              {pettingMessage && !isCrying && (
+              {pettingMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-pink-400 border-4 border-pink-600 rounded-2xl px-4 py-2 shadow-2xl whitespace-nowrap z-10">
                   <p className="text-white font-bold text-sm md:text-base">
                     {pettingMessage}
                   </p>
                 </div>
               )}
-              {talkMessage && !isCrying && (
+              {talkMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-purple-500 border-4 border-purple-700 rounded-2xl px-4 py-2 shadow-2xl max-w-xs md:max-w-md z-10">
                   <p className="text-white font-bold text-xs md:text-sm whitespace-normal">
                     {talkMessage}
                   </p>
                 </div>
               )}
-              {angryMessage && !isCrying && (
+              {angryMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-red-600 border-4 border-red-900 rounded-2xl px-4 py-2 shadow-2xl animate-pulse whitespace-nowrap z-10">
                   <p className="text-white font-bold text-sm md:text-base">
                     {angryMessage}
                   </p>
                 </div>
               )}
-              {showWhining && !angryMessage && !isCrying && (
+              {showWhining && !angryMessage && !isCrying && !pettingMessage && !talkMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-white border-4 border-red-500 rounded-2xl px-4 py-2 shadow-2xl animate-bounce whitespace-nowrap z-10">
                   <p className="text-red-600 font-bold text-sm md:text-base">
                     Нет нет, ПОГОДИ! Я ХОЧУ КУШАТЬ!
