@@ -30,6 +30,8 @@ const Index = () => {
   const [pettingMessage, setPettingMessage] = useState('');
   const [lastPettingTime, setLastPettingTime] = useState(0);
   const [isCrying, setIsCrying] = useState(false);
+  const [isAt50Percent, setIsAt50Percent] = useState(false);
+  const [message50Percent, setMessage50Percent] = useState('');
   
   const { toast } = useToast();
   
@@ -84,6 +86,25 @@ const Index = () => {
       setIsCrying(true);
     } else {
       setIsCrying(false);
+    }
+  }, [hunger, cleanliness, happiness]);
+  
+  useEffect(() => {
+    if (hunger <= 50 && hunger > 0 && cleanliness > 51 && happiness > 51) {
+      setIsAt50Percent(true);
+      setMessage50Percent('а где еда? Меня обманули?');
+      setTimeout(() => setMessage50Percent(''), 3000);
+    } else if (cleanliness <= 50 && cleanliness > 0 && hunger > 51 && happiness > 51) {
+      setIsAt50Percent(true);
+      setMessage50Percent('я пахну как кусок дерьма.');
+      setTimeout(() => setMessage50Percent(''), 3000);
+    } else if (happiness <= 50 && happiness > 0 && hunger > 51 && cleanliness > 51) {
+      setIsAt50Percent(true);
+      setMessage50Percent('ээ?');
+      setTimeout(() => setMessage50Percent(''), 3000);
+    } else if (hunger > 51 && cleanliness > 51 && happiness > 51) {
+      setIsAt50Percent(false);
+      setMessage50Percent('');
     }
   }, [hunger, cleanliness, happiness]);
   
@@ -397,6 +418,7 @@ const Index = () => {
               <img 
                 src={
                   isCrying ? "https://cdn.poehali.dev/files/b89b2f3a-4621-4754-9138-1ad5c5f5d426.png" :
+                  isAt50Percent ? "https://cdn.poehali.dev/files/dcffaa07-9edb-4f82-acab-a1f835b610bb.png" :
                   action === 'petting' ? "https://cdn.poehali.dev/files/e181ca10-ace5-4d69-a935-784413fab1e9.png" :
                   action === 'talking' ? "https://cdn.poehali.dev/files/f873f887-1595-443f-8cca-41b9757fc23b.png" :
                   action === 'angry' ? "https://cdn.poehali.dev/files/4cb7713a-ef0b-416d-a4fa-bb4fc252d836.png" :
@@ -409,19 +431,27 @@ const Index = () => {
                   action === 'angry' ? 'w-56 h-56 md:w-80 md:h-80' : 'w-64 h-64 md:w-96 md:h-96'
                 } ${
                   isCrying ? 'animate-shake' :
+                  isAt50Percent ? 'animate-shake' :
                   action === 'talking' ? 'animate-bounce-in' :
                   action === 'angry' ? '' :
                   action === 'eating' || isEating ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
                   showWhining ? 'animate-shake' :
                   'animate-float'
-                }`}
+                }` }
                 onClick={handleCharacterClick}
               />
               {isCrying && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-gray-700 border-4 border-gray-900 rounded-2xl px-4 py-2 shadow-2xl animate-bounce whitespace-nowrap z-10">
                   <p className="text-white font-bold text-sm md:text-base">
                     *Рыдание*
+                  </p>
+                </div>
+              )}
+              {message50Percent && !isCrying && (
+                <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-orange-500 border-4 border-orange-700 rounded-2xl px-4 py-2 shadow-2xl whitespace-nowrap z-10">
+                  <p className="text-white font-bold text-sm md:text-base">
+                    {message50Percent}
                   </p>
                 </div>
               )}
