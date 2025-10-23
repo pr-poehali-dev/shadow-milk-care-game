@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
-type Action = 'idle' | 'eating' | 'bathing' | 'petting' | 'sleeping';
+type Action = 'idle' | 'eating' | 'bathing' | 'petting' | 'sleeping' | 'angry';
 type Food = 'egg' | 'chicken' | 'noodles' | null;
 
 const Index = () => {
@@ -25,6 +25,7 @@ const Index = () => {
   const [happiness, setHappiness] = useState(100);
   const [showWhining, setShowWhining] = useState(false);
   const [isEating, setIsEating] = useState(false);
+  const [angryMessage, setAngryMessage] = useState('');
   
   const { toast } = useToast();
   
@@ -216,6 +217,26 @@ const Index = () => {
     chicken: '🍗',
     noodles: '🍜'
   };
+  
+  const angryMessages = [
+    'ПРЕКРАТИ!',
+    'ХВАТИТ!',
+    '*Рычание* ДА ТЫ ЗАЕБАЛ!',
+    'Я тебе сейчас глотку порву!!'
+  ];
+  
+  const handleCharacterClick = () => {
+    if (action === 'angry') return;
+    
+    const randomMessage = angryMessages[Math.floor(Math.random() * angryMessages.length)];
+    setAngryMessage(randomMessage);
+    setAction('angry');
+    
+    setTimeout(() => {
+      setAction('idle');
+      setAngryMessage('');
+    }, 2000);
+  };
 
   return (
     <div className={`min-h-screen transition-all duration-1000 ${action === 'sleeping' ? 'bg-gradient-to-b from-indigo-900 to-purple-900' : 'bg-gradient-to-b from-pink-200 via-purple-200 to-yellow-100'}`}>
@@ -276,19 +297,29 @@ const Index = () => {
             <div className={`transition-all duration-500 ${action === 'sleeping' ? 'opacity-70' : ''} relative`}>
               <img 
                 src={
+                  action === 'angry' ? "https://cdn.poehali.dev/files/4cb7713a-ef0b-416d-a4fa-bb4fc252d836.png" :
                   isEating ? "https://cdn.poehali.dev/files/1f7564f4-9858-4ca3-9234-44c89e27ade9.png" :
                   showWhining ? "https://cdn.poehali.dev/files/dcffaa07-9edb-4f82-acab-a1f835b610bb.png" : 
                   "https://cdn.poehali.dev/files/eec1f7bb-a516-476a-befa-eedf06e4dfb7.png"
                 }
                 alt="Shadow Milk Cookie"
-                className={`character-img w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl transition-all duration-500 ${
+                className={`character-img w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl transition-all duration-500 cursor-pointer ${
+                  action === 'angry' ? 'animate-pulse scale-110' :
                   action === 'eating' || isEating ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
                   showWhining ? 'animate-shake' :
                   'animate-float'
                 }`}
+                onClick={handleCharacterClick}
               />
-              {showWhining && (
+              {angryMessage && (
+                <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-red-600 border-4 border-red-900 rounded-2xl px-4 py-2 shadow-2xl animate-pulse whitespace-nowrap z-10">
+                  <p className="text-white font-bold text-sm md:text-base">
+                    {angryMessage}
+                  </p>
+                </div>
+              )}
+              {showWhining && !angryMessage && (
                 <div className="absolute -top-24 md:-top-32 left-0 md:left-1/2 transform md:-translate-x-1/2 bg-white border-4 border-red-500 rounded-2xl px-4 py-2 shadow-2xl animate-bounce whitespace-nowrap z-10">
                   <p className="text-red-600 font-bold text-sm md:text-base">
                     Нет нет, ПОГОДИ! Я ХОЧУ КУШАТЬ!
