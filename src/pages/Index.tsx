@@ -75,6 +75,45 @@ const Index = () => {
     }
   }, [hunger, toast]);
   
+  const playGrowlSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 1.2;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const envelope = Math.exp(-t * 3) * (1 - Math.exp(-t * 20));
+        const baseFreq = 80 + Math.sin(t * 5) * 40;
+        const growl = Math.sin(2 * Math.PI * baseFreq * t) * 0.4;
+        const noise = (Math.random() * 2 - 1) * 0.3 * envelope;
+        const rumble = Math.sin(2 * Math.PI * 30 * t) * 0.3 * envelope;
+        data[i] = (growl + noise + rumble) * envelope;
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.6;
+      
+      const filter = audioContext.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 800;
+      filter.Q.value = 3;
+      
+      source.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      source.start(0);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+  
   const playSound = (type: string) => {
     const audio = new Audio();
     audio.volume = 0.3;
@@ -92,6 +131,9 @@ const Index = () => {
       case 'sleep':
         audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
         break;
+      case 'growl':
+        playGrowlSound();
+        return;
     }
     
     audio.play().catch(() => {});
@@ -228,6 +270,7 @@ const Index = () => {
   const handleCharacterClick = () => {
     if (action === 'angry') return;
     
+    playSound('growl');
     const randomMessage = angryMessages[Math.floor(Math.random() * angryMessages.length)];
     setAngryMessage(randomMessage);
     setAction('angry');
