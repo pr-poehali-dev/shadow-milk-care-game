@@ -28,6 +28,7 @@ const Index = () => {
   const [angryMessage, setAngryMessage] = useState('');
   const [talkMessage, setTalkMessage] = useState('');
   const [pettingMessage, setPettingMessage] = useState('');
+  const [lastPettingTime, setLastPettingTime] = useState(0);
   
   const { toast } = useToast();
   
@@ -266,26 +267,36 @@ const Index = () => {
     if (characterRect) {
       if (x >= characterRect.left && x <= characterRect.right &&
           y >= characterRect.top && y <= characterRect.bottom) {
-        const newHappiness = Math.min(100, happiness + 1);
-        setHappiness(newHappiness);
-        if (newHappiness > 50) {
-          setShowWhining(false);
+        
+        const currentTime = Date.now();
+        const timeSinceLastPetting = currentTime - lastPettingTime;
+        
+        if (timeSinceLastPetting >= 2000 || lastPettingTime === 0) {
+          const newHappiness = Math.min(100, happiness + 15);
+          setHappiness(newHappiness);
+          setLastPettingTime(currentTime);
+          
+          if (newHappiness > 50) {
+            setShowWhining(false);
+          }
+          
+          toast({
+            title: "🎵 Мурр-мурр!",
+            description: "Shadow Milk Cookie доволен! +15 счастье",
+          });
         }
         
-        setPettingMessage('мур мур мур мур мур~~');
-        setAction('petting');
-        
-        setTimeout(() => {
-          setPettingMessage('');
-          if (action === 'petting') {
-            setAction('idle');
-          }
-        }, 3000);
-        
-        toast({
-          title: "🎵 Мурр-мурр!",
-          description: "Shadow Milk Cookie доволен! +1 счастье",
-        });
+        if (!pettingMessage) {
+          setPettingMessage('мур мур мур мур мур~~');
+          setAction('petting');
+          
+          setTimeout(() => {
+            setPettingMessage('');
+            if (action === 'petting') {
+              setAction('idle');
+            }
+          }, 3000);
+        }
       }
     }
   };
