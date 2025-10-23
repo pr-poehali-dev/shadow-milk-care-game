@@ -346,8 +346,10 @@ const Index = () => {
                   "https://cdn.poehali.dev/files/eec1f7bb-a516-476a-befa-eedf06e4dfb7.png"
                 }
                 alt="Shadow Milk Cookie"
-                className={`character-img w-64 h-64 md:w-96 md:h-96 object-contain drop-shadow-2xl transition-all duration-500 cursor-pointer ${
-                  action === 'angry' ? 'animate-pulse scale-110' :
+                className={`character-img object-contain drop-shadow-2xl transition-all duration-500 cursor-pointer ${
+                  action === 'angry' ? 'w-56 h-56 md:w-80 md:h-80' : 'w-64 h-64 md:w-96 md:h-96'
+                } ${
+                  action === 'angry' ? '' :
                   action === 'eating' || isEating ? 'animate-shake' : 
                   action === 'petting' ? 'animate-bounce-in' :
                   showWhining ? 'animate-shake' :
