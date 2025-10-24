@@ -418,7 +418,7 @@ const Index = () => {
               <img 
                 src={
                   isCrying ? "https://cdn.poehali.dev/files/b89b2f3a-4621-4754-9138-1ad5c5f5d426.png" :
-                  isAt50Percent ? "https://cdn.poehali.dev/files/dcffaa07-9edb-4f82-acab-a1f835b610bb.png" :
+                  isAt50Percent ? "https://cdn.poehali.dev/files/44743569-30d3-4a84-9b22-278bc6eda970.png" :
                   action === 'petting' ? "https://cdn.poehali.dev/files/e181ca10-ace5-4d69-a935-784413fab1e9.png" :
                   action === 'talking' ? "https://cdn.poehali.dev/files/f873f887-1595-443f-8cca-41b9757fc23b.png" :
                   action === 'angry' ? "https://cdn.poehali.dev/files/4cb7713a-ef0b-416d-a4fa-bb4fc252d836.png" :
