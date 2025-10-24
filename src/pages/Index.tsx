@@ -65,7 +65,7 @@ const Index = () => {
   }, [Math.floor(hunger / 20), Math.floor(cleanliness / 20)]);
   
   useEffect(() => {
-    if (hunger <= 50 && hunger > 0) {
+    if (hunger <= 20 && hunger > 0) {
       setShowWhining(true);
       const whineInterval = setInterval(() => {
         toast({
@@ -170,29 +170,153 @@ const Index = () => {
     }
   };
   
+  const playCrunchSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 0.8;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const envelope = Math.exp(-t * 4) * (1 - Math.exp(-t * 30));
+        const crunch = (Math.random() * 2 - 1) * 0.7 * envelope;
+        const crackle = Math.sin(2 * Math.PI * (800 + Math.random() * 400) * t) * 0.3 * envelope;
+        data[i] = (crunch + crackle) * Math.max(0, 1 - t * 1.2);
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.4;
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+
+  const playBubbleSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 1.5;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        let sound = 0;
+        for (let j = 0; j < 10; j++) {
+          const bubbleTime = (j * 0.15);
+          if (t > bubbleTime && t < bubbleTime + 0.2) {
+            const localT = t - bubbleTime;
+            const envelope = Math.exp(-localT * 8);
+            const freq = 400 + j * 100 + Math.sin(localT * 20) * 50;
+            sound += Math.sin(2 * Math.PI * freq * localT) * envelope * 0.15;
+          }
+        }
+        data[i] = sound;
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.3;
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+
+  const playShowerSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 3;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const noise = (Math.random() * 2 - 1);
+        const filtered = noise * Math.sin(t * 50) * 0.5;
+        const waterFlow = noise * 0.3;
+        data[i] = (filtered + waterFlow) * Math.min(1, t * 2) * Math.max(0, 1 - (t - 2.5) * 2);
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      const filter = audioContext.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1500;
+      filter.Q.value = 1;
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.25;
+      source.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+
+  const playLampSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 0.3;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const click = Math.exp(-t * 40) * Math.sin(2 * Math.PI * 1200 * t);
+        const hum = Math.sin(2 * Math.PI * 120 * t) * 0.1 * Math.min(1, t * 10);
+        data[i] = click + hum;
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.35;
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+
   const playSound = (type: string) => {
-    const audio = new Audio();
-    audio.volume = 0.3;
-    
     switch(type) {
       case 'click':
+        const audio = new Audio();
+        audio.volume = 0.3;
         audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+        audio.play().catch(() => {});
         break;
       case 'eat':
-        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+        playCrunchSound();
         break;
-      case 'water':
-        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+      case 'bubbles':
+        playBubbleSound();
         break;
-      case 'sleep':
-        audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKfj8LVjHQU5k9jyzHomBSh+y/HajD4IFmS56+miUhELTKXh8bllHgU2jNXxz3woBSR5xu/bkj4IFme7...';
+      case 'shower':
+        playShowerSound();
+        break;
+      case 'lamp':
+        playLampSound();
         break;
       case 'growl':
         playGrowlSound();
-        return;
+        break;
     }
-    
-    audio.play().catch(() => {});
   };
 
   const handleFoodClick = () => {
@@ -235,7 +359,7 @@ const Index = () => {
   };
 
   const handleSleepClick = () => {
-    playSound('sleep');
+    playSound('lamp');
     if (action === 'sleeping') {
       setAction('idle');
     } else {
@@ -248,12 +372,13 @@ const Index = () => {
     if (characterRect) {
       if (x >= characterRect.left && x <= characterRect.right &&
           y >= characterRect.top && y <= characterRect.bottom) {
+        playSound('bubbles');
         setShowBubbles(true);
         setShowSoap(false);
         setDraggingSoap(false);
         
         setTimeout(() => {
-          playSound('water');
+          playSound('shower');
           setShowShower(true);
           setCleanliness(100);
           setTimeout(() => {
@@ -275,9 +400,14 @@ const Index = () => {
     if (characterRect && selectedFood) {
       if (x >= characterRect.left && x <= characterRect.right &&
           y >= characterRect.top && y <= characterRect.bottom) {
-        playSound('eat');
         setIsEating(true);
         setHunger(Math.min(100, hunger + 30));
+        
+        playSound('eat');
+        setTimeout(() => playSound('eat'), 300);
+        setTimeout(() => playSound('eat'), 600);
+        setTimeout(() => playSound('eat'), 900);
+        
         toast({
           title: "😋 Вкусно!",
           description: "Shadow Milk Cookie съел еду! +30 голод",
