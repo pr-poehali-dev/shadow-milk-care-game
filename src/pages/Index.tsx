@@ -35,6 +35,13 @@ const Index = () => {
   
   const [showCardGame, setShowCardGame] = useState(false);
   const [gameState, setGameState] = useState<'intro' | 'rules' | 'playing'>('intro');
+  const [aiCard, setAiCard] = useState<string>('🃏');
+  const [playerCard, setPlayerCard] = useState<string>('🂠');
+  const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [playerScore, setPlayerScore] = useState(0);
+  const [aiScore, setAiScore] = useState(0);
+  
+  const cardTypes = ['🤡', '❤️', '🎪', '♟️', '🎭'];
   
   const { toast } = useToast();
   
@@ -491,6 +498,45 @@ const Index = () => {
     }, 2000);
   };
 
+  const handleSelectCard = () => {
+    const randomCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+    setPlayerCard(randomCard);
+    setIsCardFlipped(false);
+  };
+
+  const handleFlipCard = () => {
+    setIsCardFlipped(true);
+    const aiRandomCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+    setAiCard(aiRandomCard);
+    
+    setTimeout(() => {
+      if (playerCard === aiRandomCard) {
+        setPlayerScore(prev => prev + 1);
+        toast({
+          title: "🎉 Совпадение!",
+          description: "Вы получили 1 балл!",
+        });
+      } else {
+        setAiScore(prev => prev + 1);
+        toast({
+          title: "😈 Не совпало!",
+          description: "Shadow Milk получил 1 балл!",
+          variant: "destructive"
+        });
+      }
+    }, 500);
+  };
+
+  const startNewGame = () => {
+    setGameState('playing');
+    setPlayerScore(0);
+    setAiScore(0);
+    setIsCardFlipped(false);
+    const aiRandomCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+    setAiCard(aiRandomCard);
+    setPlayerCard('🂠');
+  };
+
   return (
     <div className={`min-h-screen transition-all duration-1000 relative ${action === 'sleeping' ? 'bg-gradient-to-b from-indigo-900 to-purple-900' : ''}`}>
       <div 
@@ -857,11 +903,13 @@ const Index = () => {
             </button>
 
             <div className="flex flex-col items-center justify-center h-full gap-8 p-8">
-              <img 
-                src="https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png"
-                alt="Shadow Milk"
-                className="w-64 h-64 object-contain drop-shadow-2xl animate-bounce-in"
-              />
+              {gameState !== 'playing' && (
+                <img 
+                  src="https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png"
+                  alt="Shadow Milk"
+                  className="w-64 h-64 object-contain drop-shadow-2xl animate-bounce-in"
+                />
+              )}
 
               {gameState === 'intro' && (
                 <div className="bg-white bg-opacity-95 rounded-2xl p-6 max-w-2xl border-4 border-blue-500 shadow-2xl">
@@ -870,7 +918,7 @@ const Index = () => {
                   </p>
                   <div className="flex gap-4 justify-center">
                     <button
-                      onClick={() => setGameState('playing')}
+                      onClick={startNewGame}
                       className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl text-lg transition-all hover:scale-105 shadow-lg"
                     >
                       Да
@@ -892,7 +940,7 @@ const Index = () => {
                   </p>
                   <div className="flex justify-center">
                     <button
-                      onClick={() => setGameState('playing')}
+                      onClick={startNewGame}
                       className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-lg transition-all hover:scale-105 shadow-lg"
                     >
                       Играть
@@ -902,19 +950,56 @@ const Index = () => {
               )}
 
               {gameState === 'playing' && (
-                <div className="flex flex-col items-center gap-8">
-                  <div className="text-white text-2xl font-bold bg-blue-900 bg-opacity-80 px-6 py-3 rounded-xl">
-                    Карта персонажа
-                  </div>
-                  <div className="w-32 h-48 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-6xl">
-                    🃏
-                  </div>
+                <div className="flex items-center justify-center gap-12">
+                  <img 
+                    src="https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png"
+                    alt="Shadow Milk"
+                    className="w-48 h-48 object-contain drop-shadow-2xl"
+                  />
+                  
+                  <div className="flex flex-col items-center gap-6">
+                    <div className="bg-white bg-opacity-90 px-6 py-2 rounded-xl border-2 border-blue-500">
+                      <span className="font-bold text-blue-900">Счёт: {aiScore} - {playerScore}</span>
+                    </div>
+                    
+                    <div className="w-40 h-56 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-7xl transition-transform hover:scale-105">
+                      {isCardFlipped ? aiCard : '🂠'}
+                    </div>
 
-                  <div className="text-white text-2xl font-bold bg-blue-900 bg-opacity-80 px-6 py-3 rounded-xl mt-12">
-                    Ваша карта
-                  </div>
-                  <div className="w-32 h-48 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-6xl">
-                    🂠
+                    <div className="w-40 h-56 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-7xl transition-transform hover:scale-105">
+                      {playerCard}
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button
+                        onClick={handleSelectCard}
+                        disabled={isCardFlipped}
+                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg"
+                      >
+                        Выбрать карту
+                      </button>
+                      <button
+                        onClick={handleFlipCard}
+                        disabled={isCardFlipped}
+                        className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg"
+                      >
+                        Перевернуть
+                      </button>
+                    </div>
+
+                    {isCardFlipped && (
+                      <button
+                        onClick={() => {
+                          setIsCardFlipped(false);
+                          const newAiCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+                          setAiCard(newAiCard);
+                          setPlayerCard('🂠');
+                        }}
+                        className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg"
+                      >
+                        Следующий раунд
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
