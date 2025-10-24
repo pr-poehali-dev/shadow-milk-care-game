@@ -40,8 +40,23 @@ const Index = () => {
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [playerScore, setPlayerScore] = useState(0);
   const [aiScore, setAiScore] = useState(0);
+  const [gameMessage, setGameMessage] = useState('');
+  const [gameCharacterPose, setGameCharacterPose] = useState('https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png');
   
   const cardTypes = ['🤡', '❤️', '🎪', '♟️', '🎭'];
+  
+  const aiWinMessages = [
+    'ХАХА! Как же приятно, когда ты страдаешь!',
+    'Неужели куколка проиграла? Как весело!~',
+    '1 бал у меня в кармане!~'
+  ];
+  
+  const playerWinMessages = [
+    'Гмм... Как...?',
+    'Это не честно!',
+    'Ой нет... Я проиграю...?!',
+    'А ты хорош, но я об этом не надеюсь'
+  ];
   
   const { toast } = useToast();
   
@@ -303,6 +318,33 @@ const Index = () => {
     }
   };
 
+  const playCardSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const duration = 0.15;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const snap = Math.exp(-t * 35) * (Math.random() * 2 - 1) * 0.6;
+        const flutter = Math.sin(2 * Math.PI * (600 + t * 200) * t) * Math.exp(-t * 20) * 0.3;
+        data[i] = snap + flutter;
+      }
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.4;
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.log('Audio not supported');
+    }
+  };
+
   const playSound = (type: string) => {
     switch(type) {
       case 'click':
@@ -499,12 +541,15 @@ const Index = () => {
   };
 
   const handleSelectCard = () => {
+    playCardSound();
     const randomCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
     setPlayerCard(randomCard);
     setIsCardFlipped(false);
+    setGameMessage('');
   };
 
   const handleFlipCard = () => {
+    playCardSound();
     setIsCardFlipped(true);
     const aiRandomCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
     setAiCard(aiRandomCard);
@@ -512,12 +557,18 @@ const Index = () => {
     setTimeout(() => {
       if (playerCard === aiRandomCard) {
         setPlayerScore(prev => prev + 1);
+        const message = playerWinMessages[Math.floor(Math.random() * playerWinMessages.length)];
+        setGameMessage(message);
+        setGameCharacterPose('https://cdn.poehali.dev/files/44743569-30d3-4a84-9b22-278bc6eda970.png');
         toast({
           title: "🎉 Совпадение!",
           description: "Вы получили 1 балл!",
         });
       } else {
         setAiScore(prev => prev + 1);
+        const message = aiWinMessages[Math.floor(Math.random() * aiWinMessages.length)];
+        setGameMessage(message);
+        setGameCharacterPose('https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png');
         toast({
           title: "😈 Не совпало!",
           description: "Shadow Milk получил 1 балл!",
@@ -532,6 +583,8 @@ const Index = () => {
     setPlayerScore(0);
     setAiScore(0);
     setIsCardFlipped(false);
+    setGameMessage('');
+    setGameCharacterPose('https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png');
     const aiRandomCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
     setAiCard(aiRandomCard);
     setPlayerCard('🂠');
@@ -950,38 +1003,45 @@ const Index = () => {
               )}
 
               {gameState === 'playing' && (
-                <div className="flex items-center justify-center gap-12">
-                  <img 
-                    src="https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png"
-                    alt="Shadow Milk"
-                    className="w-48 h-48 object-contain drop-shadow-2xl"
-                  />
+                <div className="flex flex-col items-center justify-center gap-6">
+                  <div className="relative">
+                    <img 
+                      src={gameCharacterPose}
+                      alt="Shadow Milk"
+                      className="w-56 h-56 object-contain drop-shadow-2xl"
+                    />
+                    {gameMessage && (
+                      <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-95 rounded-2xl px-6 py-3 border-4 border-blue-500 shadow-2xl whitespace-nowrap max-w-md">
+                        <p className="text-lg font-bold text-blue-900">"{gameMessage}"</p>
+                      </div>
+                    )}
+                  </div>
                   
-                  <div className="flex flex-col items-center gap-6">
+                  <div className="flex flex-col items-center gap-4 mt-16">
                     <div className="bg-white bg-opacity-90 px-6 py-2 rounded-xl border-2 border-blue-500">
                       <span className="font-bold text-blue-900">Счёт: {aiScore} - {playerScore}</span>
                     </div>
                     
-                    <div className="w-40 h-56 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-7xl transition-transform hover:scale-105">
+                    <div className="w-32 h-44 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-6xl transition-transform hover:scale-105">
                       {isCardFlipped ? aiCard : '🂠'}
                     </div>
 
-                    <div className="w-40 h-56 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-7xl transition-transform hover:scale-105">
+                    <div className="w-32 h-44 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-6xl transition-transform hover:scale-105">
                       {playerCard}
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 mt-2">
                       <button
                         onClick={handleSelectCard}
                         disabled={isCardFlipped}
-                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg"
+                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg disabled:cursor-not-allowed"
                       >
                         Выбрать карту
                       </button>
                       <button
                         onClick={handleFlipCard}
                         disabled={isCardFlipped}
-                        className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg"
+                        className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg disabled:cursor-not-allowed"
                       >
                         Перевернуть
                       </button>
@@ -990,10 +1050,13 @@ const Index = () => {
                     {isCardFlipped && (
                       <button
                         onClick={() => {
+                          playCardSound();
                           setIsCardFlipped(false);
+                          setGameMessage('');
                           const newAiCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
                           setAiCard(newAiCard);
                           setPlayerCard('🂠');
+                          setGameCharacterPose('https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png');
                         }}
                         className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition-all hover:scale-105 shadow-lg"
                       >
