@@ -33,6 +33,9 @@ const Index = () => {
   const [isAt50Percent, setIsAt50Percent] = useState(false);
   const [message50Percent, setMessage50Percent] = useState('');
   
+  const [showCardGame, setShowCardGame] = useState(false);
+  const [gameState, setGameState] = useState<'intro' | 'rules' | 'playing'>('intro');
+  
   const { toast } = useToast();
   
   useEffect(() => {
@@ -781,48 +784,144 @@ const Index = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-4 gap-4 pb-8">
-          <Card 
-            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
-              action === 'eating' ? 'border-yellow-400 bg-yellow-50' : 'border-purple-300 bg-white'
-            }`}
-            onClick={handleFoodClick}
-          >
-            <div className="text-5xl">🍪</div>
-            <span className="font-bold text-sm md:text-base text-center">Еда</span>
-          </Card>
+        <div className="relative pb-8">
+          <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 z-20">
+            <button
+              onClick={() => {
+                setShowCardGame(true);
+                setGameState('intro');
+              }}
+              className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 border-4 border-blue-700 shadow-2xl flex items-center justify-center text-4xl cursor-pointer transition-all hover:scale-110 active:scale-95"
+            >
+              🃏
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-4 gap-4">
+            <Card 
+              className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+                action === 'eating' ? 'border-yellow-400 bg-yellow-50' : 'border-purple-300 bg-white'
+              }`}
+              onClick={handleFoodClick}
+            >
+              <div className="text-5xl">🍪</div>
+              <span className="font-bold text-sm md:text-base text-center">Еда</span>
+            </Card>
 
-          <Card 
-            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
-              action === 'bathing' ? 'border-blue-400 bg-blue-50' : 'border-purple-300 bg-white'
-            }`}
-            onClick={handleBathClick}
-          >
-            <div className="text-5xl">🛁</div>
-            <span className="font-bold text-sm md:text-base text-center">Ванна</span>
-          </Card>
+            <Card 
+              className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+                action === 'bathing' ? 'border-blue-400 bg-blue-50' : 'border-purple-300 bg-white'
+              }`}
+              onClick={handleBathClick}
+            >
+              <div className="text-5xl">🛁</div>
+              <span className="font-bold text-sm md:text-base text-center">Ванна</span>
+            </Card>
 
-          <Card 
-            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
-              action === 'petting' ? 'border-pink-400 bg-pink-50' : 'border-purple-300 bg-white'
-            }`}
-            onClick={handlePetClick}
-          >
-            <div className="text-5xl">✋</div>
-            <span className="font-bold text-sm md:text-base text-center">Гладить</span>
-          </Card>
+            <Card 
+              className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+                action === 'petting' ? 'border-pink-400 bg-pink-50' : 'border-purple-300 bg-white'
+              }`}
+              onClick={handlePetClick}
+            >
+              <div className="text-5xl">✋</div>
+              <span className="font-bold text-sm md:text-base text-center">Гладить</span>
+            </Card>
 
-          <Card 
-            className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
-              action === 'sleeping' ? 'border-indigo-400 bg-indigo-50' : 'border-purple-300 bg-white'
-            }`}
-            onClick={handleSleepClick}
-          >
-            <div className="text-5xl">🌙</div>
-            <span className="font-bold text-sm md:text-base text-center">Спать</span>
-          </Card>
+            <Card 
+              className={`p-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all hover:scale-105 border-4 ${
+                action === 'sleeping' ? 'border-indigo-400 bg-indigo-50' : 'border-purple-300 bg-white'
+              }`}
+              onClick={handleSleepClick}
+            >
+              <div className="text-5xl">🌙</div>
+              <span className="font-bold text-sm md:text-base text-center">Спать</span>
+            </Card>
+          </div>
         </div>
       </div>
+
+      {showCardGame && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div 
+            className="w-full h-full relative bg-cover bg-center"
+            style={{
+              backgroundImage: 'url(https://cdn.poehali.dev/files/396f0bf7-fc8a-4ae4-89bf-d71caa828679.png)',
+            }}
+          >
+            <button
+              onClick={() => setShowCardGame(false)}
+              className="absolute top-4 right-4 w-12 h-12 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg transition-all hover:scale-110"
+            >
+              ✕
+            </button>
+
+            <div className="flex flex-col items-center justify-center h-full gap-8 p-8">
+              <img 
+                src="https://cdn.poehali.dev/files/d7cb47a3-a17f-436d-970a-4a384e1df6d3.png"
+                alt="Shadow Milk"
+                className="w-64 h-64 object-contain drop-shadow-2xl animate-bounce-in"
+              />
+
+              {gameState === 'intro' && (
+                <div className="bg-white bg-opacity-95 rounded-2xl p-6 max-w-2xl border-4 border-blue-500 shadow-2xl">
+                  <p className="text-xl font-bold text-center mb-6 text-blue-900">
+                    "Хей! Хочешь со мной поиграть в карты?~ Хорошо, как скажешь!~ Правила знаешь?~"
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={() => setGameState('playing')}
+                      className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl text-lg transition-all hover:scale-105 shadow-lg"
+                    >
+                      Да
+                    </button>
+                    <button
+                      onClick={() => setGameState('rules')}
+                      className="px-8 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-lg transition-all hover:scale-105 shadow-lg"
+                    >
+                      Нет
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {gameState === 'rules' && (
+                <div className="bg-white bg-opacity-95 rounded-2xl p-6 max-w-2xl border-4 border-blue-500 shadow-2xl">
+                  <p className="text-lg font-bold text-center mb-6 text-blue-900">
+                    "Смотри, куколка! Перед тобой карты. Я хожу первой, а потом ты! И ты в угад выбираешь карту, или другую!~ если будет карта, как у меня, ты получаешь 1 бал! А если я, то у меня 1 бал! Ну же, начни игру, Хе хе!"
+                  </p>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setGameState('playing')}
+                      className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl text-lg transition-all hover:scale-105 shadow-lg"
+                    >
+                      Играть
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {gameState === 'playing' && (
+                <div className="flex flex-col items-center gap-8">
+                  <div className="text-white text-2xl font-bold bg-blue-900 bg-opacity-80 px-6 py-3 rounded-xl">
+                    Карта персонажа
+                  </div>
+                  <div className="w-32 h-48 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-6xl">
+                    🃏
+                  </div>
+
+                  <div className="text-white text-2xl font-bold bg-blue-900 bg-opacity-80 px-6 py-3 rounded-xl mt-12">
+                    Ваша карта
+                  </div>
+                  <div className="w-32 h-48 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl border-4 border-white shadow-2xl flex items-center justify-center text-6xl">
+                    🂠
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
