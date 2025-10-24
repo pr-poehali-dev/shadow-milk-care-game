@@ -489,8 +489,16 @@ const Index = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-all duration-1000 ${action === 'sleeping' ? 'bg-gradient-to-b from-indigo-900 to-purple-900' : 'bg-gradient-to-b from-pink-200 via-purple-200 to-yellow-100'}`}>
-      <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
+    <div className={`min-h-screen transition-all duration-1000 relative ${action === 'sleeping' ? 'bg-gradient-to-b from-indigo-900 to-purple-900' : ''}`}>
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: action === 'sleeping' ? 'none' : 'url(https://cdn.poehali.dev/files/2df42dfb-d7f2-42cd-b6ad-7e6a6111c637.png)',
+          opacity: action === 'sleeping' ? 0 : 1,
+          transition: 'opacity 1s ease-in-out'
+        }}
+      />
+      <div className="container mx-auto px-4 py-6 h-screen flex flex-col relative z-10">
         <h1 className="game-title text-3xl md:text-5xl text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-500">
           Ухаживай за Shadow Milk! 🍪
         </h1>
